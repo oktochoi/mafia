@@ -16,6 +16,14 @@ export default function NightPhase({ state, dispatch }: NightPhaseProps) {
   const alivePlayers = state.players.filter(p => p.alive);
 
   const handleNext = () => {
+    // 경찰 조사 결과 확인 후 바로 낮으로 이동 (가장 먼저 체크)
+    if (showPoliceResult && state.nightActions.policeCheckId) {
+      setShowPoliceResult(false);
+      setSelectedTarget(null);
+      dispatch({ type: 'START_DAY' });
+      return;
+    }
+    
     if (state.nightStep === 'mafia' && selectedTarget) {
       dispatch({ type: 'SET_MAFIA_TARGET', targetId: selectedTarget });
       setSelectedTarget(null);
@@ -27,11 +35,6 @@ export default function NightPhase({ state, dispatch }: NightPhaseProps) {
     } else if (state.nightStep === 'police' && selectedTarget) {
       dispatch({ type: 'SET_POLICE_CHECK', targetId: selectedTarget });
       setShowPoliceResult(true);
-    } else if (showPoliceResult) {
-      // 경찰 결과 확인 후 다음 단계로
-      setShowPoliceResult(false);
-      setSelectedTarget(null);
-      dispatch({ type: 'NEXT_NIGHT_STEP' });
     } else if (state.nightStep === 'done') {
       dispatch({ type: 'START_DAY' });
     } else {
