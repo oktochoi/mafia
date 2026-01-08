@@ -11,21 +11,28 @@ interface NightPhaseProps {
 
 export default function NightPhase({ state, dispatch }: NightPhaseProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
+  const [showPoliceResult, setShowPoliceResult] = useState(false);
 
   const alivePlayers = state.players.filter(p => p.alive);
 
   const handleNext = () => {
     if (state.nightStep === 'mafia' && selectedTarget) {
       dispatch({ type: 'SET_MAFIA_TARGET', targetId: selectedTarget });
+      setSelectedTarget(null);
+      dispatch({ type: 'NEXT_NIGHT_STEP' });
     } else if (state.nightStep === 'doctor' && selectedTarget) {
       dispatch({ type: 'SET_DOCTOR_SAVE', targetId: selectedTarget });
+      setSelectedTarget(null);
+      dispatch({ type: 'NEXT_NIGHT_STEP' });
     } else if (state.nightStep === 'police' && selectedTarget) {
       dispatch({ type: 'SET_POLICE_CHECK', targetId: selectedTarget });
-    }
-
-    setSelectedTarget(null);
-    
-    if (state.nightStep === 'done') {
+      setShowPoliceResult(true);
+    } else if (showPoliceResult) {
+      // 경찰 결과 확인 후 다음 단계로
+      setShowPoliceResult(false);
+      setSelectedTarget(null);
+      dispatch({ type: 'NEXT_NIGHT_STEP' });
+    } else if (state.nightStep === 'done') {
       dispatch({ type: 'START_DAY' });
     } else {
       dispatch({ type: 'NEXT_NIGHT_STEP' });
@@ -148,6 +155,52 @@ export default function NightPhase({ state, dispatch }: NightPhaseProps) {
       return null;
     }
 
+    // 경찰 조사 결과 표시
+    if (showPoliceResult && state.nightActions.policeCheckId) {
+      const checkedPlayer = state.players.find(p => p.id === state.nightActions.policeCheckId);
+      const isMafia = state.nightActions.policeCheckResult;
+
+      return (
+        <div>
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <i className="ri-shield-star-line flex items-center justify-center text-blue-200 text-3xl sm:text-4xl"></i>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">경찰 조사 결과</h2>
+            <p className="text-sm sm:text-base text-blue-200 mb-4 sm:mb-6">경찰만 확인하세요</p>
+          </div>
+
+          <div className="bg-blue-900/30 border-2 border-blue-700/50 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="text-center mb-4">
+              <p className="text-blue-300 font-semibold text-base sm:text-lg mb-3">
+                {checkedPlayer?.name}님
+              </p>
+              <div className={`text-2xl sm:text-3xl font-bold mb-2 ${
+                isMafia ? 'text-red-400' : 'text-green-400'
+              }`}>
+                {isMafia ? '마피아입니다' : '마피아가 아닙니다'}
+              </div>
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full flex items-center justify-center ${
+                isMafia ? 'bg-red-900/50' : 'bg-green-900/50'
+              }`}>
+                <i className={`${isMafia ? 'ri-skull-line' : 'ri-check-line'} flex items-center justify-center text-3xl sm:text-4xl ${
+                  isMafia ? 'text-red-300' : 'text-green-300'
+                }`}></i>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleNext}
+            className="w-full py-3 sm:py-4 bg-white text-indigo-900 rounded-xl font-bold text-base sm:text-lg hover:bg-indigo-50 transition-all shadow-lg whitespace-nowrap cursor-pointer"
+          >
+            확인
+          </button>
+        </div>
+      );
+    }
+
+    // 경찰 조사 대상 선택
     const targets = alivePlayers.filter(p => p.role !== 'police');
 
     return (

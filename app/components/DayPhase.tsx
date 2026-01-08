@@ -36,10 +36,6 @@ export default function DayPhase({ state, dispatch }: DayPhaseProps) {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  const policeResult = state.nightActions.policeCheckId 
-    ? state.players.find(p => p.id === state.nightActions.policeCheckId)
-    : null;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-zinc-900 p-3 sm:p-4 pb-16 sm:pb-20">
       <div className="max-w-2xl mx-auto pt-4 sm:pt-8">
@@ -78,20 +74,6 @@ export default function DayPhase({ state, dispatch }: DayPhaseProps) {
             </div>
           )}
 
-          {policeResult && state.players.find(p => p.role === 'police' && p.alive) && (
-            <div className="bg-blue-900/30 border-2 border-blue-700/50 rounded-xl p-3 sm:p-4">
-              <p className="text-blue-300 font-semibold text-xs sm:text-sm mb-2">
-                <i className="ri-shield-star-line w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center mr-1 inline-block"></i>
-                경찰 조사 결과 (경찰만 확인)
-              </p>
-              <p className="text-sm sm:text-base text-blue-200">
-                {policeResult.name}님은 
-                <span className={state.nightActions.policeCheckResult ? 'text-red-400 font-bold' : 'text-green-400 font-bold'}>
-                  {state.nightActions.policeCheckResult ? ' 마피아입니다' : ' 마피아가 아닙니다'}
-                </span>
-              </p>
-            </div>
-          )}
         </div>
 
         <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 mb-4 sm:mb-6 border border-purple-700/50">
